@@ -27,23 +27,24 @@
                 body: formData
             });
             
+            const responseData = await r.json().catch(() => ({}));
+            
             if (!r.ok) {
-                const text = await r.text();
-                let message = text;
-                try {
-                    const json = JSON.parse(text);
-                    message = json.message || text;
-                } catch (e) {
-                    // ignore JSON parse error
-                }
+                // Extract error message from response
+                const message = responseData.message || `Login failed (${r.status})`;
                 throw new Error(message);
             }
 
-            await invalidateAll();
-            goto('/');
+            // Check if response indicates success
+            if (responseData.message === 'Success') {
+                await invalidateAll();
+                goto('/');
+            } else {
+                throw new Error(responseData.message || 'Login failed');
+            }
         } catch (err) {
             console.error('Login error:', err);
-            errorMsg = err.message || 'Login failed.';
+            errorMsg = err.message || 'Login failed. Please check your credentials and try again.';
         } finally {
             loading = false;
         }

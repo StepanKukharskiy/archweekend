@@ -1,6 +1,6 @@
 <script>
   import { invalidateAll } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { slide } from 'svelte/transition';
   import logo from '$lib/images/logo_nobg.png';
   
   export let data;
@@ -290,33 +290,10 @@
         <h1>AI Песочница</h1>
         <p>Чат‑песочница Archweekend для текстов и изображений под архитектурные задачи.</p>
       </div>
-      <div class="header-right">
-        <div class="mode-switch">
-        <button
-          type="button"
-          class:selected={mode === 'text'}
-          on:click={() => (mode = 'text')}
-        >
-          Текст
-        </button>
-        <button
-          type="button"
-          class:selected={mode === 'image'}
-          on:click={() => (mode = 'image')}
-        >
-          Изображения
-        </button>
-        </div>
-      </div>
     </header>
 
-    <section class="chat-panel">
-      {#if messages.length === 0}
-        <p class="placeholder">
-          Начните с промпта внизу — здесь появятся ваши сообщения и ответы модели (текст и изображения),
-          как в обычном мессенджере.
-        </p>
-      {:else}
+    {#if messages.length > 0}
+      <section class="chat-panel" in:slide out:slide>
         <div class="messages">
           {#each messages as msg (msg.id)}
             <article class={`message ${msg.role === 'user' ? 'user' : 'assistant'}`}>
@@ -423,8 +400,8 @@
             </article>
           {/each}
         </div>
-      {/if}
-    </section>
+      </section>
+    {/if}
 
     <section class="input-panel">
       {#if mode === 'image' && selectedImageIds.size > 0}
@@ -439,98 +416,96 @@
           </button>
         </div>
       {/if}
-      
-      <div class="model-row">
-        {#if mode === 'text'}
-          <div class="model-select">
-            <label for="text-model">Текстовая модель</label>
-            <select id="text-model" bind:value={textModel}>
-              <option value="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8">Llama 4 Maverick</option>
-              <option value="openai/gpt-oss-120b">GPT OSS 120B</option>
-            </select>
-          </div>
-        {:else}
-          <div class="model-select">
-            <label for="image-model">Модель изображений</label>
-            <select id="image-model" bind:value={imageModel}>
-              <option value="black-forest-labs/FLUX.2-pro">FLUX.2 Pro</option>
-              <option value="google/gemini-3-pro-image">Nano Banana Pro</option>
-            </select>
-          </div>
 
-          <div class="model-select">
-            <label for="aspect">Соотношение сторон</label>
-            <select id="aspect" bind:value={aspectRatio}>
-              <option value="square">Квадрат 1:1</option>
-              {#if imageModel.includes('gemini') || imageModel.includes('google/')}
-                <option value="landscape">Горизонтальное 3:2</option>
-                <option value="portrait">Вертикальное 2:3</option>
-              {:else}
-                <option value="landscape">Горизонтальное 16:9</option>
-                <option value="portrait">Вертикальное 9:16</option>
-              {/if}
-            </select>
-          </div>
-        {/if}
-      </div>
-
-      <div class="input-row">
-        {#if mode === 'image'}
-          <label for="file-upload" class="upload-label">
-            <input
-              bind:this={fileInput}
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              multiple
-              on:change={handleFileUpload}
-              style="display: none;"
-            />
-            📷 Загрузить
-          </label>
-        {/if}
-        <label for="prompt" class="prompt-label">Ваш запрос</label>
-      </div>
-      <textarea
-        id="prompt"
-        bind:value={prompt}
-        rows="3"
-        placeholder={mode === 'text'
-          ? 'Опишите, какой текст вам нужен: концепция павильона, описание проекта, пояснительная записка...'
-          : 'Опишите желаемое изображение или выберите изображения для редактирования...'}
-      ></textarea>
-
-      {#if errorMessage}
-        <p class="error">{errorMessage}</p>
-      {/if}
-
-      <div class="input-actions">
-        <button 
-          type="button" 
-          class="run" 
-          on:click={runSandbox} 
-          disabled={isLoading || (mode === 'text' && credits < 1) || (mode === 'image' && credits < 5)}
-        >
-          {#if isLoading}
-            Генерация...
-          {:else if mode === 'text' && credits < 1}
-            Недостаточно кредитов (нужно 1)
-          {:else if mode === 'image' && credits < 5}
-            Недостаточно кредитов (нужно 5)
-          {:else}
-            Отправить
+      <!-- Single input container (Omni Banana–style composition) -->
+      <div class="input-box">
+        <div class="input-top">
+          {#if mode === 'image'}
+            <label for="file-upload" class="upload-area">
+              <input
+                bind:this={fileInput}
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                on:change={handleFileUpload}
+                class="sr-only"
+              />
+              <span class="upload-icon" aria-hidden="true">+</span>
+            </label>
           {/if}
-        </button>
+          <textarea
+            id="prompt"
+            bind:value={prompt}
+            rows="3"
+            class="prompt-input"
+            placeholder={mode === 'text'
+              ? 'Опишите, какой текст вам нужен: концепция павильона, описание проекта, пояснительная записка...'
+              : 'Опишите желаемое изображение или выберите изображения для редактирования...'}
+          ></textarea>
+        </div>
 
-        <div class="hint-row">
-          <p class="hint">
-            Текст — диалог в стиле ChatGPT, Изображения — генерация визуализаций с кнопкой скачивания.
-          </p>
-          <p class="cost-hint">
-            Стоимость: {mode === 'text' ? '1 кредит' : '5 кредитов'}
-          </p>
+        {#if errorMessage}
+          <p class="error">{errorMessage}</p>
+        {/if}
+
+        <div class="input-bottom">
+          <div class="bottom-left">
+            <div class="mode-switch pill">
+              <button type="button" class:selected={mode === 'text'} on:click={() => (mode = 'text')}>Текст</button>
+              <button type="button" class:selected={mode === 'image'} on:click={() => (mode = 'image')}>Изображения</button>
+            </div>
+            {#if mode === 'text'}
+              <div class="select-pill model-pill">
+                <select id="text-model" bind:value={textModel} aria-label="Текстовая модель">
+                  <option value="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8">Llama 4 Maverick</option>
+                  <option value="openai/gpt-oss-120b">GPT OSS 120B</option>
+                </select>
+              </div>
+              <span class="pill-spacer" aria-hidden="true"></span>
+            {:else}
+              <div class="select-pill model-pill">
+                <select id="image-model" bind:value={imageModel} aria-label="Модель изображений">
+                  <option value="black-forest-labs/FLUX.2-pro">FLUX.2 Pro</option>
+                  <option value="google/gemini-3-pro-image">Nano Banana Pro</option>
+                </select>
+              </div>
+              <div class="select-pill aspect-pill">
+                <select id="aspect" bind:value={aspectRatio} aria-label="Соотношение сторон">
+                  <option value="square">1:1</option>
+                  {#if imageModel.includes('gemini') || imageModel.includes('google/')}
+                    <option value="landscape">3:2</option>
+                    <option value="portrait">2:3</option>
+                  {:else}
+                    <option value="landscape">16:9</option>
+                    <option value="portrait">9:16</option>
+                  {/if}
+                </select>
+              </div>
+            {/if}
+          </div>
+          <div class="bottom-right">
+            <button
+              type="button"
+              class="run"
+              on:click={runSandbox}
+              disabled={isLoading || (mode === 'text' && credits < 1) || (mode === 'image' && credits < 5)}
+            >
+              {#if isLoading}
+                Генерация...
+              {:else if mode === 'text' && credits < 1}
+                Недостаточно кредитов (1)
+              {:else if mode === 'image' && credits < 5}
+                Недостаточно кредитов (5)
+              {:else}
+                Генерировать
+              {/if}
+            </button>
+          </div>
         </div>
       </div>
+
+      <p class="cost-hint">Стоимость: {mode === 'text' ? '1 кредит' : '5 кредитов'}</p>
     </section>
   </section>
 </main>
@@ -627,19 +602,7 @@
   }
 
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
     margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
   }
 
   h1 {
@@ -694,11 +657,10 @@
   }
 
   .input-panel {
-    padding: 10px 12px 0;
-    border-top: 1px solid #e5e7eb;
+    padding: 10px 0 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .selection-info {
@@ -728,70 +690,166 @@
     background: #dbeafe;
   }
 
-  .input-row {
+  /* ——— Single input box (Omni Banana–style) ——— */
+  .input-box {
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 12px;
   }
 
-  .upload-label {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    background: #ffffff;
-    color: #4b5563;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .input-top {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
   }
 
-  .upload-label:hover {
-    background: #f3f4f6;
+  .upload-area {
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+
+  .upload-area:hover {
     border-color: #2563eb;
+    background: #eff6ff;
+  }
+
+  .upload-icon {
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: #9ca3af;
+    line-height: 1;
+  }
+
+  .upload-area:hover .upload-icon {
     color: #2563eb;
   }
 
-  .prompt-label {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .prompt-input {
     flex: 1;
-  }
-
-  label {
-    display: block;
-    font-size: 0.86rem;
-    color: #4b5563;
-    margin-bottom: 6px;
-  }
-
-  textarea {
-    width: 100%;
+    min-width: 0;
     resize: vertical;
     min-height: 72px;
     max-height: 164px;
     padding: 10px 12px;
     border-radius: 12px;
-    border: 1px solid #d1d5db;
+    border: 1px solid #e5e7eb;
     background: #ffffff;
     color: #111827;
     font-size: 0.95rem;
     line-height: 1.5;
     outline: none;
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
   }
 
-  textarea::placeholder {
+  .prompt-input::placeholder {
     color: #9ca3af;
   }
 
-  textarea:focus {
+  .prompt-input:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.8);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  }
+
+  .input-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bottom-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .bottom-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mode-switch.pill {
+    padding: 2px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    border: 1px solid #d1d5db;
+  }
+
+  .mode-switch.pill button {
+    padding: 5px 12px;
+    font-size: 0.82rem;
+  }
+
+  .select-pill {
+    position: relative;
+  }
+
+  .select-pill.model-pill {
+    min-width: 160px;
+  }
+
+  .select-pill.aspect-pill {
+    min-width: 72px;
+  }
+
+  .pill-spacer {
+    flex-shrink: 0;
+    width: 72px;
+    display: inline-block;
+  }
+
+  .select-pill select {
+    appearance: none;
+    padding: 6px 28px 6px 12px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #4b5563;
+    font-size: 0.82rem;
+    cursor: pointer;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  .select-pill select:hover {
+    border-color: #9ca3af;
+  }
+
+  .select-pill select:focus {
+    border-color: #2563eb;
   }
 
   .run {
-    margin-top: 4px;
     padding: 8px 18px;
     border-radius: 999px;
     border: none;
@@ -819,25 +877,9 @@
     box-shadow: none;
   }
 
-  .hint-row {
-    margin-top: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .hint {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin: 0;
-  }
-
   .cost-hint {
     font-size: 0.8rem;
-    color: #2563eb;
-    font-weight: 500;
+    color: #6b7280;
     margin: 0;
   }
 

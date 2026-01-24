@@ -1120,6 +1120,7 @@
 												<a href="#contact">Контакты</a>
 												{#if isLoggedIn}
 													<a href="/course">Материалы</a>
+													<a href="/ai-sandbox">Песочница</a>
 												{/if}
 											</div>
 											<div>

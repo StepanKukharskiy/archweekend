@@ -43,8 +43,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   const togetherApiKey = TOGETHER_API_KEY;
 
-  console.log(togetherApiKey)
-
   if (!togetherApiKey) {
     console.error('Missing TOGETHER_API_KEY in environment');
     throw error(500, 'Together AI API key is not configured on the server.');

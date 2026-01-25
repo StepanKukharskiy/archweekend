@@ -113,7 +113,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 512,
+          max_tokens: 8192,
           temperature: 0.7
         })
       });

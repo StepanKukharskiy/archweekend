@@ -1,8 +1,22 @@
 <script>
   import { invalidateAll } from '$app/navigation';
   import { slide } from 'svelte/transition';
+  import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
   import logo from '$lib/images/logo_nobg.png';
-  
+
+  marked.setOptions({ gfm: true, breaks: true });
+
+  function renderMarkdown(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    try {
+      const html = marked.parse(raw, { async: false });
+      return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'blockquote', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td'] });
+    } catch {
+      return DOMPurify.sanitize(raw);
+    }
+  }
+
   export let data;
   
   let mode = 'text';
@@ -348,7 +362,7 @@
                   {:else if msg.mode === 'text'}
                     {#if msg.text}
                       <div class="text-content">
-                        <pre>{msg.text}</pre>
+                        <div class="markdown-body">{@html renderMarkdown(msg.text)}</div>
                         <button
                           type="button"
                           class="copy-btn"
@@ -970,11 +984,33 @@
     gap: 8px;
   }
 
-  .text-content p,
-  .text-content pre {
+  .text-content .markdown-body {
     flex: 1;
+    min-width: 0;
     margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
   }
+
+  :global(.markdown-body p) { margin: 0.5em 0; }
+  :global(.markdown-body p:first-child) { margin-top: 0; }
+  :global(.markdown-body p:last-child) { margin-bottom: 0; }
+  :global(.markdown-body h1) { font-size: 1.35em; font-weight: 700; margin: 0.75em 0 0.35em; }
+  :global(.markdown-body h2) { font-size: 1.2em; font-weight: 600; margin: 0.7em 0 0.3em; }
+  :global(.markdown-body h3) { font-size: 1.1em; font-weight: 600; margin: 0.6em 0 0.25em; }
+  :global(.markdown-body h4), :global(.markdown-body h5), :global(.markdown-body h6) { font-size: 1em; font-weight: 600; margin: 0.5em 0 0.2em; }
+  :global(.markdown-body ul), :global(.markdown-body ol) { margin: 0.5em 0; padding-left: 1.5em; }
+  :global(.markdown-body li) { margin: 0.2em 0; }
+  :global(.markdown-body blockquote) { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid #d1d5db; color: #4b5563; }
+  :global(.markdown-body hr) { margin: 0.75em 0; border: none; border-top: 1px solid #e5e7eb; }
+  :global(.markdown-body a) { color: #2563eb; text-decoration: none; }
+  :global(.markdown-body a:hover) { text-decoration: underline; }
+  :global(.markdown-body pre) { margin: 0.5em 0; padding: 10px 12px; border-radius: 10px; background: #f3f4f6; border: 1px solid #e5e7eb; font-size: 0.85em; line-height: 1.5; white-space: pre-wrap; max-height: 260px; overflow: auto; }
+  :global(.markdown-body code) { padding: 0.15em 0.4em; border-radius: 4px; background: #f3f4f6; border: 1px solid #e5e7eb; font-size: 0.9em; }
+  :global(.markdown-body pre code) { padding: 0; background: none; border: none; font-size: inherit; }
+  :global(.markdown-body table) { border-collapse: collapse; width: 100%; margin: 0.5em 0; font-size: 0.9em; }
+  :global(.markdown-body th), :global(.markdown-body td) { border: 1px solid #e5e7eb; padding: 6px 10px; text-align: left; }
+  :global(.markdown-body thead th) { background: #f3f4f6; font-weight: 600; }
 
   .copy-btn {
     flex-shrink: 0;

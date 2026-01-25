@@ -288,7 +288,8 @@
     <header class="header">
       <div>
         <h1>AI Песочница</h1>
-        <p>Чат‑песочница Archweekend для текстов и изображений под архитектурные задачи.</p>
+        <p>Чат‑песочница для текстов и изображений под архитектурные задачи.</p>
+        <p class="disclaimer"><i>💨 Пожалуйста, учтите, что ARCHWEEKEND не сохраняет историю чатов и сгенерированные изображения. При перезагрузке страницы всё исчезнет. Пуфф!</i></p>
       </div>
     </header>
 
@@ -578,8 +579,7 @@
   .page {
     min-height: 100vh;
     padding: 100px 16px 80px;
-    background: radial-gradient(circle at top, rgba(191, 219, 254, 0.7), transparent 55%),
-      #f3f4f6;
+    background: none;
     color: #0f172a;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
     display: flex;
@@ -619,6 +619,14 @@
     color: #4b5563;
     max-width: 520px;
     font-size: 0.96rem;
+  }
+
+  .disclaimer {
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 0.82rem;
+    color: #6b7280;
+    max-width: 520px;
   }
 
   .mode-switch {

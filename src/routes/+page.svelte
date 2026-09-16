@@ -1,6 +1,7 @@
 									<script>
 										import { onMount } from 'svelte';
-										import { goto, invalidateAll } from '$app/navigation';
+										import ProjectCarousel from '$lib/ProjectCarousel.svelte';
+										import WorkshopProgram from '$lib/WorkshopProgram.svelte';
 										import photo from '$lib/images/photo.jpg';
 										import bg from '$lib/images/archweekend_flowfield.webp';
 										import logo from '$lib/images/logo_nobg.png';
@@ -13,11 +14,11 @@
 										import img6 from '$lib/images/6.webp'
 										import img7 from '$lib/images/7.webp'
 
-										export let data = {}; 
+										export let data = { user: undefined };
 
 										let modalActive = false;
-										let modalType = '';
-										let stickyNavVisible = true;
+										let modalType = 'register';
+										let stickyNavVisible = false;
 
 											// Placeholder images for the grid (Replace these with your actual imports)
 											const projectImages = [
@@ -31,13 +32,6 @@
 											};
 
 											window.addEventListener('scroll', handleScroll);
-
-											// Animate numbers
-											const statNumbers = document.querySelectorAll('.stat-number');
-											statNumbers.forEach((stat) => {
-												const target = parseInt(stat.dataset.target);
-												animateNumber(stat, target);
-											});
 
 											// Scroll animations
 											const observer = new IntersectionObserver(
@@ -57,23 +51,11 @@
 
 											return () => {
 												window.removeEventListener('scroll', handleScroll);
+												observer.disconnect();
 											};
 										});
 
-										function animateNumber(element, target, duration = 2000) {
-											const increment = target / (duration / 16);
-											let current = 0;
-
-											const timer = setInterval(() => {
-												current += increment;
-												if (current >= target) {
-													current = target;
-													clearInterval(timer);
-												}
-												element.textContent = Math.floor(current) + (target > 100 ? '+' : '');
-											}, 16);
-										}
-
+										/** @param {'register'} type */
 										function openModal(type) {
 											modalType = type;
 											modalActive = true;
@@ -86,15 +68,17 @@
 										const modals = {
 											register: {
 												title: 'ГАЙД ПО AI для архитекторов',
-												text: `Оплачивая курс, вы получаете вечный доступ к записям всех 4-х занятий (теория + практика) и вступаете в закрытое комьюнити для обсуждения любых вопросов.
-													Мы свяжемся с вами по email в течение 24 часов после оплаты и откроем доступ к материалам.
-													Рады видеть вас на курсе! Успехов в освоении ИИ!`,
+												text: `26 и 27 сентября · Онлайн · Для новичков
+
+									Два дня по 2–2,5 часа. На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.
+
+									Стоимость участия — 8 500 ₽.`,
 												link: 'https://auth.robokassa.ru/merchant/Invoice/ntaUtFjBMk-v-U4AF7il2g',
 												linkText: 'Перейти к оплате'
 											}
 										};
 
-										$: currentModal = modals[modalType] || modals.register;
+										$: currentModal = modals.register;
 										// Determine if user is logged in
 										$: isLoggedIn = data?.user || false; 
 
@@ -115,10 +99,15 @@
 									</script>
 
 									<svelte:head>
-										<title>ГАЙД ПО AI для архитекторов | SA lab</title>
+										<title>AI-агенты для архитекторов — 26 и 27 сентября | SA lab</title>
+										<meta name="description" content="Онлайн-воркшоп SA lab для новичков: 26 и 27 сентября. От исследования места до PDF-презентации с AI-агентами. Два дня по 2–2,5 часа. Стоимость — 8 500 ₽." />
 									</svelte:head>
 
 									<style>
+										.workshop-intro p + p { margin-top: 24px; }
+										.project-intro, .program-outro { max-width: 900px; margin: 24px auto 0; font-size: 1.15rem; line-height: 1.7; }
+
+
 										:global(body) {
 											--color-bg: #f9f9f9;
 											--color-surface: rgba(255, 255, 255, 0.03);
@@ -516,6 +505,7 @@
 
 										/* Section */
 										section {
+											scroll-margin-top: 80px;
 											padding: 80px 20px;
 											transform: translateY(0);
 											transition: opacity 0.6s ease, transform 0.6s ease;
@@ -1017,6 +1007,7 @@
 										}
 
 										@media (max-width: 768px) {
+											section { scroll-margin-top: 140px; }
 											.hero {
 												min-height: auto;
 												padding: 40px 20px;
@@ -1108,13 +1099,17 @@
 															padding: 0 20px; /* Restore padding for edge-to-edge container logic */
 													}
 										}
+										@media (max-width: 480px) {
+											.grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); }
+											footer { padding-bottom: 110px; }
+										}
 									</style>
 
 									<!-- Sticky Navigation -->
 									<div class="sticky-nav {stickyNavVisible ? 'visible' : ''}" id="stickyNav">
 										<nav>
 											<div style="display: flex; gap: 20px; flex-wrap: wrap;">
-												<a href="#about">О курсе</a>
+												<a href="#about">О воркшопе</a>
 												<a href="#program">Программа</a>
 												<a href="#instructor">Куратор</a>
 												<a href="#contact">Контакты</a>
@@ -1150,17 +1145,17 @@
 											<h1>ГАЙД ПО AI<br />для архитекторов</h1>
 
 											<p class="subtitle">
-												Учим методологии использования AI в архитектурной практике
+												От первого исследования до PDF-презентации с AI-агентом
 											</p>
 
 											<div class="hero-stats">
 												<div class="stat">
-													<span class="stat-number" data-target="20">0</span>
-													<span class="stat-label">Нейронок</span>
+													<span class="stat-number">26–27</span>
+													<span class="stat-label">сентября · онлайн</span>
 												</div>
 												<div class="stat">
-													<span class="stat-number" data-target="4">0</span>
-													<span class="stat-label">Занятия</span>
+													<span class="stat-number">2–2,5</span>
+													<span class="stat-label">часа в день · два дня</span>
 												</div>
 											</div>
 
@@ -1173,86 +1168,50 @@
 										<!-- Running Text -->
 										<div class="running-text">
 											<div class="running-text-inner">
-												<span>Nano Banana • ChatGPT • Perplexity • Stable Diffusion • ControlNet</span>
-												<span>Nano Banana • ChatGPT • Perplexity • Stable Diffusion • ControlNet</span>
-												<span>Nano Banana • ChatGPT • Perplexity • Stable Diffusion • ControlNet</span>
+												<span>Codex • Telegram • Perplexity • Rhino • Nano Banana • Weavy</span>
+												<span>Codex • Telegram • Perplexity • Rhino • Nano Banana • Weavy</span>
+												<span>Codex • Telegram • Perplexity • Rhino • Nano Banana • Weavy</span>
 											</div>
 										</div>
 
 										<!-- Key Info -->
 										<div class="info-grid">
 											<div class="info-item">
-												<h3>Теория + Практика</h3>
+												<h3>26 и 27 сентября</h3>
 											</div>
 											<div class="info-item">
-												<h3>Online курс</h3>
+												<h3>Онлайн</h3>
 											</div>
 											<div class="info-item">
 												<h3>Для новичков</h3>
 											</div>
 											<div class="info-item">
-												<h3>7500₽</h3>
+												<h3>8 500 ₽</h3>
 											</div>
 										</div>
 
 										<!-- About Section -->
 										<section id="about" class="scroll-section">
-											<div class="highlight-card">
-												<h2>AI уже работает в архитектуре. Вопрос не в том, использовать ли, вопрос в том, как начать и не потеряться среди тысячи нейронок.</h2>
-												<p>
-													Как не утонуть в информационном шуме, когда новые инструменты появляются каждый месяц? Как встроить искусственный интеллект в архитектурную проектирование? Как быстро адаптироваться к скорости внедрения AI? На этом курсе мы рассказываем о <strong>методологии работы с AI</strong>, который не будет привязан к выходу новой нейронки, а создаст фундамент интеграции в практику.<br><br>
-													За четыре занятия вы с нуля создадите деревянный павильон для тестирования методологии. Поймете, как выбирать нейронку под конкретную задачу, писать промпт, который работает, научитесь делегировать рутинные задачи и экспериментировать.
-												</p>
+											<div class="highlight-card workshop-intro">
+												<h2>От первого исследования до PDF-презентации</h2>
+												<p>У архитектурной идеи длинный путь: понять место, прочитать бриф, найти форму, проверить её в модели, показать атмосферу, создать нарратив и собрать подачу. На воркшопе мы пройдём этот путь с AI-агентом — от первого исследования до PDF-презентации.</p>
+												<p>Сначала сделаем концепцию, работая с агентом в Codex (Astra). Затем соберём другой способ управления тем же процессом, но через общение с AI-агентом в Telegram-боте. Бот направит задачи в Perplexity для исследования, Rhino для моделирования и Nano Banana для визуализации. Соберёте рабочий воркфлоу, который сможете адаптировать под свои задачи.</p>
+												<p>На этом воркшопе мы рассказываем о <strong>методологии работы с AI</strong>, которая не привязана к выходу новой нейронки, а создаст фундамент интеграции в практику.</p>
 											</div>
+										</section>
+
+										<section id="workshop-project" class="scroll-section">
+											<h2 class="section-title">Linha do Horizonte</h2>
+											<p class="project-intro"><strong>Работать будем с реальным местом и проектной задачей.</strong> На примере конкурса ARCH CHALLENGE: Linha do Horizonte придумаем жилой комплекс в Сидаде-Велья, на острове Сантьягу. Рельеф, океан, исторический контекст, свет и тень здесь влияют на архитектуру. AI-агент будет работать с данными, моделировать и создавать визуализации, а вы научитесь контролировать процесс.</p>
+											<ProjectCarousel />
 										</section>
 
 										<!-- Program Section -->
 										<section id="program" class="scroll-section">
-											<h2 class="section-title">Программа курса</h2>
-											<p class="section-subtitle">4 практических занятия с реальными инструментами и задачами</p>
-
-											<div class="grid grid-2">
-												<div class="card">
-													<h3>Занятие 1: Как мы сюда пришли</h3>
-													<ul>
-														<li>История трансформеров и LLM</li>
-														<li>Почему AI стал актуален именно сейчас</li>
-														<li>Обзор ландшафта AI-инструментов для архитекторов</li>
-														<li>Понимание возможностей и ограничений</li>
-													</ul>
-												</div>
-
-												<div class="card">
-													<h3>Занятие 2: Как выбрать инструмент?</h3>
-													<ul>
-														<li>ChatGPT и Perplexity — тестируем на практике</li>
-														<li>Как анализировать техническое задание и нормативы</li>
-														<li>Учимся выбирать модель под архитектурную задачу</li>
-														<li>Практика: исследования с помощью AI и анализ ТЗ</li>
-													</ul>
-												</div>
-
-												<div class="card">
-													<h3>Занятие 3: Делаем красивые картинки</h3>
-													<ul>
-														<li>Как текст становится изображением</li>
-														<li>ControlNet, Stable Diffusion, Nano Banana</li>
-														<li>Управляемая генерация изображений</li>
-														<li>Почему Replicate удобнее Midjourney</li>
-														<li>Практика: генерируем концепции павильона</li>
-													</ul>
-												</div>
-
-												<div class="card">
-													<h3>Занятие 4: Тренируем нейронки</h3>
-													<ul>
-														<li>Язык, на котором разговаривают с AI</li>
-														<li>Fine-tuning и transfer learning</li>
-														<li>Практика: тренируем свою нейронку</li>
-														<li>Создаем итоговый проект — деревянный павильон</li>
-													</ul>
-												</div>
-											</div>
+											<h2 class="section-title">Программа воркшопа</h2>
+											<p class="section-subtitle"><strong>Два дня по 2–2,5 часа.</strong> На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.</p>
+											<WorkshopProgram />
+											<p class="program-outro">В завершение познакомимся с инструментами собственной разработки <strong>SA lab</strong> для сквозного проектирования с помощью агентов, связывающих работу в разных программах.</p>
 										</section>
 
 										<!-- Instructor Section -->
@@ -1306,7 +1265,7 @@
 
 										<!-- Benefits Section -->
 										<section class="scroll-section">
-											<h2 class="section-title">Для кого этот курс?</h2>
+											<h2 class="section-title">Для кого этот воркшоп?</h2>
 
 											<div class="grid grid-3">
 												<div class="card">
@@ -1331,11 +1290,11 @@
 												<div class="card">
 													<h3>Что вы получите</h3>
 													<ul>
-														<li>Методологию выбора AI-инструментов под задачу</li>
-														<li>Навык написания эффективных промптов</li>
+														<li>Методологию работы с AI в проектировании</li>
+														<li>Навык постановки задач и управления AI-агентом</li>
 														<li>Реальный проект для портфолио</li>
-														<li>Понимание, как делегировать задачи AI</li>
-														<li>Доступ к записям навсегда</li>
+														<li>Рабочий воркфлоу, который можно адаптировать под свои задачи</li>
+														<li>Связанную wiki с материалами и решениями проекта</li>
 													</ul>
 												</div>
 
@@ -1345,7 +1304,7 @@
 														<li>Ноутбук или ПК с выходом в интернет</li>
 														<li>Базовые навыки работы с компьютером</li>
 														<li>Желание экспериментировать</li>
-														<li>Аккаунты в ChatGPT/Perplexity (бесплатные версии подойдут)</li>
+														<li>Доступ к Codex и используемым AI-инструментам</li>
 													</ul>
 												</div>
 											</div>
@@ -1367,8 +1326,8 @@
 										<!-- Registration Section -->
 										<section id="register" class="scroll-section">
 											<div class="highlight-card">
-												<h2 style='text-align: center;'>Забронируйте место на курсе</h2>
-												<p style='text-align: center;'>Начните свой путь интеграции AI в архитектурную практику уже сейчас</p>
+												<h2 style='text-align: center;'>Забронируйте место на воркшопе</h2>
+												<p style='text-align: center;'>26 и 27 сентября · Онлайн · Для новичков · 8 500 ₽</p>
 												<button class="hero-cta" on:click={() => openModal('register')} style="margin: 40px auto 0;">
 													Присоединиться →
 												</button>
@@ -1397,7 +1356,7 @@
 											<a href="/privacy-policy">Политика конфиденциальности</a>
 											<a href="/oferta">Публичная оферта</a>
 										</div>
-										<p class="footer-copy">© 2025 SA lab</p>
+										<p class="footer-copy">© 2026 SA lab</p>
 									</footer>
 
 									<!-- Modal -->

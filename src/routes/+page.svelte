@@ -68,9 +68,9 @@
 										const modals = {
 											register: {
 												title: 'ГАЙД ПО AI для архитекторов',
-												text: `26 и 27 сентября · Онлайн · Для новичков
+												text: `26 и 27 сентября · 10:00 МСК · Онлайн · Для новичков
 
-									Два дня по 2–2,5 часа. На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.
+									5 часов за два дня. На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.
 
 									Стоимость участия — 8 500 ₽.`,
 												link: 'https://auth.robokassa.ru/merchant/Invoice/ntaUtFjBMk-v-U4AF7il2g',
@@ -100,7 +100,7 @@
 
 									<svelte:head>
 										<title>AI-агенты для архитекторов — 26 и 27 сентября | SA lab</title>
-										<meta name="description" content="Онлайн-воркшоп SA lab для новичков: 26 и 27 сентября. От первого исследования до архитектурной концепции с AI-агентом. Два дня по 2–2,5 часа. Стоимость — 8 500 ₽." />
+										<meta name="description" content="Онлайн-воркшоп SA lab для новичков: 26 и 27 сентября, 10:00 МСК. От первого исследования до архитектурной концепции с AI-агентом. 5 часов за два дня. Стоимость — 8 500 ₽." />
 									</svelte:head>
 
 									<style>
@@ -1151,11 +1151,11 @@
 											<div class="hero-stats">
 												<div class="stat">
 													<span class="stat-number">26–27</span>
-													<span class="stat-label">сентября · онлайн</span>
+													<span class="stat-label">сентября · 10:00 МСК</span>
 												</div>
 												<div class="stat">
-													<span class="stat-number">2–2,5</span>
-													<span class="stat-label">часа в день · два дня</span>
+													<span class="stat-number">5 часов</span>
+													<span class="stat-label">онлайн · два дня</span>
 												</div>
 											</div>
 
@@ -1209,7 +1209,7 @@
 										<!-- Program Section -->
 										<section id="program" class="scroll-section">
 											<h2 class="section-title">Программа воркшопа</h2>
-											<p class="section-subtitle"><strong>Два дня по 2–2,5 часа.</strong> На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.</p>
+											<p class="section-subtitle"><strong>5 часов за два дня.</strong> На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.</p>
 											<WorkshopProgram />
 											<p class="program-outro">В завершение познакомимся с инструментами собственной разработки <strong>SA lab</strong> для сквозного проектирования с помощью агентов, связывающих работу в разных программах.</p>
 										</section>
@@ -1327,7 +1327,7 @@
 										<section id="register" class="scroll-section">
 											<div class="highlight-card">
 												<h2 style='text-align: center;'>Забронируйте место на воркшопе</h2>
-												<p style='text-align: center;'>26 и 27 сентября · Онлайн · Для новичков · 8 500 ₽</p>
+												<p style='text-align: center;'>26 и 27 сентября · 10:00 МСК · Онлайн · Для новичков · 8 500 ₽</p>
 												<button class="hero-cta" on:click={() => openModal('register')} style="margin: 40px auto 0;">
 													Присоединиться →
 												</button>

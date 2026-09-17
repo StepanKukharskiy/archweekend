@@ -142,17 +142,13 @@
 						>
 							<img
 								src={image.thumbnail}
+								srcset={`${image.thumbnail} 1x, ${image.src} 2x`}
 								alt={image.alt}
 								width={image.width}
 								height={image.height}
 								loading="eager"
 								decoding="async"
 							/>
-							<span class="caption"
-								><span>{String(index + 1).padStart(2, '0')} / {image.alt}</span><span
-									aria-hidden="true">↗</span
-								></span
-							>
 						</button>
 					{/each}
 				</div>
@@ -184,7 +180,7 @@
 			/>
 			<div class="lightbox-footer">
 				<button aria-label="Предыдущее изображение" on:click={() => navigate(-1)}>←</button>
-				<p aria-live="polite">{selected + 1} / {images.length} — {images[selected].alt}</p>
+				<p aria-live="polite">{selected + 1} / {images.length}</p>
 				<button aria-label="Следующее изображение" on:click={() => navigate(1)}>→</button>
 			</div>
 		</div>
@@ -201,6 +197,7 @@
 		outline-offset: 4px;
 	}
 	.gallery {
+		--image-height: 420px;
 		margin-top: 40px;
 	}
 	.gallery-tools {
@@ -246,7 +243,7 @@
 	.image-card {
 		display: block;
 		flex: 0 0 auto;
-		width: calc(284px * var(--image-ratio));
+		width: calc(var(--image-height) * var(--image-ratio));
 		padding: 0;
 		border: 0;
 		color: #1a1a1a;
@@ -256,20 +253,10 @@
 	.image-card img {
 		display: block;
 		width: 100%;
-		height: 284px;
+		height: var(--image-height);
 		object-fit: contain;
 		background: #eeece6;
 		border-radius: 12px;
-	}
-	.caption {
-		display: flex;
-		justify-content: space-between;
-		gap: 12px;
-		margin-top: 12px;
-		font-size: 0.8rem;
-	}
-	.image-card:hover .caption {
-		color: #0000eb;
 	}
 	.lightbox {
 		position: fixed;
@@ -346,15 +333,12 @@
 		font-size: 0.95rem;
 	}
 	@media (max-width: 600px) {
+		.gallery {
+			--image-height: 70vw;
+		}
 		.gallery-tools {
 			align-items: flex-start;
 			flex-direction: column;
-		}
-		.image-card {
-			width: calc(57vw * var(--image-ratio));
-		}
-		.image-card img {
-			height: 57vw;
 		}
 		.lightbox {
 			padding: 12px;

@@ -68,9 +68,9 @@
 										const modals = {
 											register: {
 												title: 'ГАЙД ПО AI для архитекторов',
-												text: `26 и 27 сентября · Онлайн · Для новичков
+												text: `26 и 27 сентября · 10:00 МСК · Онлайн · Для новичков
 
-									Два дня по 2–2,5 часа. На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.
+									5 часов за два дня. На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.
 
 									Стоимость участия — 8 500 ₽.`,
 												link: 'https://auth.robokassa.ru/merchant/Invoice/ntaUtFjBMk-v-U4AF7il2g',
@@ -100,7 +100,7 @@
 
 									<svelte:head>
 										<title>AI-агенты для архитекторов — 26 и 27 сентября | SA lab</title>
-										<meta name="description" content="Онлайн-воркшоп SA lab для новичков: 26 и 27 сентября. От исследования места до PDF-презентации с AI-агентами. Два дня по 2–2,5 часа. Стоимость — 8 500 ₽." />
+										<meta name="description" content="Онлайн-воркшоп SA lab для новичков: 26 и 27 сентября, 10:00 МСК. От первого исследования до архитектурной концепции с AI-агентом. 5 часов за два дня. Стоимость — 8 500 ₽." />
 									</svelte:head>
 
 									<style>
@@ -1145,17 +1145,17 @@
 											<h1>ГАЙД ПО AI<br />для архитекторов</h1>
 
 											<p class="subtitle">
-												От первого исследования до PDF-презентации с AI-агентом
+												От первого исследования до архитектурной концепции с AI-агентом
 											</p>
 
 											<div class="hero-stats">
 												<div class="stat">
 													<span class="stat-number">26–27</span>
-													<span class="stat-label">сентября · онлайн</span>
+													<span class="stat-label">сентября · 10:00 МСК</span>
 												</div>
 												<div class="stat">
-													<span class="stat-number">2–2,5</span>
-													<span class="stat-label">часа в день · два дня</span>
+													<span class="stat-number">5 часов</span>
+													<span class="stat-label">онлайн · два дня</span>
 												</div>
 											</div>
 
@@ -1168,9 +1168,9 @@
 										<!-- Running Text -->
 										<div class="running-text">
 											<div class="running-text-inner">
-												<span>Codex • Telegram • Perplexity • Rhino • Nano Banana • Weavy</span>
-												<span>Codex • Telegram • Perplexity • Rhino • Nano Banana • Weavy</span>
-												<span>Codex • Telegram • Perplexity • Rhino • Nano Banana • Weavy</span>
+												<span>Codex • Rhino • GPT Image 2.5 • Nano Banana 2 • Weavy</span>
+												<span>Codex • Rhino • GPT Image 2.5 • Nano Banana 2 • Weavy</span>
+												<span>Codex • Rhino • GPT Image 2.5 • Nano Banana 2 • Weavy</span>
 											</div>
 										</div>
 
@@ -1193,9 +1193,9 @@
 										<!-- About Section -->
 										<section id="about" class="scroll-section">
 											<div class="highlight-card workshop-intro">
-												<h2>От первого исследования до PDF-презентации</h2>
-												<p>У архитектурной идеи длинный путь: понять место, прочитать бриф, найти форму, проверить её в модели, показать атмосферу, создать нарратив и собрать подачу. На воркшопе мы пройдём этот путь с AI-агентом — от первого исследования до PDF-презентации.</p>
-												<p>Сначала сделаем концепцию, работая с агентом в Codex (Astra). Затем соберём другой способ управления тем же процессом, но через общение с AI-агентом в Telegram-боте. Бот направит задачи в Perplexity для исследования, Rhino для моделирования и Nano Banana для визуализации. Соберёте рабочий воркфлоу, который сможете адаптировать под свои задачи.</p>
+												<h2>От первого исследования до архитектурной концепции с AI-агентом</h2>
+												<p>У архитектурной идеи длинный путь: понять место, прочитать бриф, найти форму, проверить её в модели, показать атмосферу, создать нарратив и собрать подачу. На воркшопе мы пройдём путь от первого исследования до архитектурной концепции с AI-агентом.</p>
+												<p>Вместе с агентом в Codex (Astra) свяжем исследование, 3D-моделирование и визуализацию в единый процесс. Для исследования используем Perplexity, для работы с 3D — Rhino, для создания изображений — Nano Banana 2 и GPT Image 2.5. Покажем, как управлять задачами напрямую в Codex и через Telegram-бота. Соберёте рабочий воркфлоу, который сможете адаптировать под свои задачи.</p>
 												<p>На этом воркшопе мы рассказываем о <strong>методологии работы с AI</strong>, которая не привязана к выходу новой нейронки, а создаст фундамент интеграции в практику.</p>
 											</div>
 										</section>
@@ -1209,7 +1209,7 @@
 										<!-- Program Section -->
 										<section id="program" class="scroll-section">
 											<h2 class="section-title">Программа воркшопа</h2>
-											<p class="section-subtitle"><strong>Два дня по 2–2,5 часа.</strong> На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.</p>
+											<p class="section-subtitle"><strong>5 часов за два дня.</strong> На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.</p>
 											<WorkshopProgram />
 											<p class="program-outro">В завершение познакомимся с инструментами собственной разработки <strong>SA lab</strong> для сквозного проектирования с помощью агентов, связывающих работу в разных программах.</p>
 										</section>
@@ -1327,7 +1327,7 @@
 										<section id="register" class="scroll-section">
 											<div class="highlight-card">
 												<h2 style='text-align: center;'>Забронируйте место на воркшопе</h2>
-												<p style='text-align: center;'>26 и 27 сентября · Онлайн · Для новичков · 8 500 ₽</p>
+												<p style='text-align: center;'>26 и 27 сентября · 10:00 МСК · Онлайн · Для новичков · 8 500 ₽</p>
 												<button class="hero-cta" on:click={() => openModal('register')} style="margin: 40px auto 0;">
 													Присоединиться →
 												</button>

@@ -73,7 +73,7 @@
 									5 часов за два дня. На примере архитектурного проекта Linha do Horizonte пройдём путь от исходных материалов до проектного предложения.
 
 									Стоимость участия — 8 500 ₽.`,
-												link: 'https://auth.robokassa.ru/merchant/Invoice/ntaUtFjBMk-v-U4AF7il2g',
+												link: 'https://auth.robokassa.ru/merchant/Invoice/cPN6D2r-l0GL6uo5fesVQQ',
 												linkText: 'Перейти к оплате'
 											}
 										};
@@ -1307,19 +1307,6 @@
 														<li>Доступ к Codex и используемым AI-инструментам</li>
 													</ul>
 												</div>
-											</div>
-										</section>
-
-										<!-- Intro Video Section -->
-										<section id="intro_vid" class="scroll-section">
-											<h2 class="section-title">Введение</h2>
-											<div class="highlight-card">
-												<iframe
-													src="https://player.mux.com/KEwmiM2Gs02c7oIacWMK4JUixwwj4WKvCTYDsMnif6no?metadata-video-title=lesson+1o&video-title=intro&accent-color=%230000ff"
-													style="width: 100%; border: none; aspect-ratio: 16/9;"
-													allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-													allowfullscreen
-												></iframe>
 											</div>
 										</section>
 

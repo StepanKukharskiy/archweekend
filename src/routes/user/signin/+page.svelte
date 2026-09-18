@@ -10,8 +10,9 @@
     let errorMsg = '';
 
     async function handleLogin() {
+        if (loading) return;
         if (!email.trim() || !password.trim()) {
-            errorMsg = 'Please fill in both fields.';
+            errorMsg = 'Введите email и пароль.';
             return;
         }
         loading = true;
@@ -38,25 +39,25 @@
             // Check if response indicates success
             if (responseData.message === 'Success') {
                 await invalidateAll();
-                goto('/');
+                await goto('/course');
             } else {
                 throw new Error(responseData.message || 'Login failed');
             }
         } catch (err) {
-            console.error('Login error:', err);
-            errorMsg = err.message || 'Login failed. Please check your credentials and try again.';
+            errorMsg = err instanceof Error ? err.message : 'Не удалось войти. Попробуйте ещё раз.';
         } finally {
             loading = false;
         }
     }
 
+    /** @param {KeyboardEvent} e */
     function handleKeydown(e) {
         if (e.key === 'Enter') handleLogin();
     }
 </script>
 
 <svelte:head>
-    <title>Sign In | Archweekend</title>
+    <title>Вход к материалам | Archweekend</title>
 </svelte:head>
 
 <div class="page">
@@ -64,6 +65,8 @@
         <div class="logo-container">
             <img class="logo" src={logo} alt="Archweekend Logo" />
         </div>
+
+        <p>Введите email, указанный при регистрации, и пароль для доступа к записям и AI-песочнице. Если войти не получается, напишите <a href="mailto:hello@salab.org">hello@salab.org</a>.</p>
 
         <div class="input-group">
             <label for="email">Email</label>
@@ -79,7 +82,7 @@
         </div>
 
         <div class="input-group">
-            <label for="password">Password</label>
+            <label for="password">Пароль</label>
             <input
                 id="password"
                 type="password"
@@ -101,9 +104,9 @@
             disabled={loading}
         >
             {#if loading}
-                <div class="spinner mini"></div> <span>Signing in...</span>
+                <div class="spinner mini"></div> <span>Входим...</span>
             {:else}
-                <span>Sign in</span>
+                <span>Войти</span>
             {/if}
         </button>
     </div>

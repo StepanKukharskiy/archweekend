@@ -1,9 +1,19 @@
 import { redirect } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
+import { creditStore } from '$lib/server/recovery-credits';
 
 export async function load({ locals }) {
     // If user is not authenticated, redirect to signin
     if (!locals.user) {
         throw redirect(303, '/user/signin');
+    }
+
+    if (locals.user.access === 'recovery') {
+        try {
+            return { user: { ...locals.user, credits: creditStore(env).balance(locals.user.email) }, sandboxUnavailable: false };
+        } catch {
+            return { user: { ...locals.user, credits: 0 }, sandboxUnavailable: true };
+        }
     }
 
     // Fetch the latest user data including credits

@@ -284,6 +284,10 @@
   <title>AI Песочница | Archweekend</title>
 </svelte:head>
 
+{#if data.sandboxUnavailable}
+  <p role="alert" style="margin: 100px 24px 24px;">Песочница временно недоступна. Напишите hello@salab.org.</p>
+{/if}
+
 <!-- Frosty Glass Nav Bar -->
 <nav class="frosty-nav">
   <div class="nav-content">

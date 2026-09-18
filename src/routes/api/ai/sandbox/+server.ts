@@ -1,10 +1,11 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { json, error } from '@sveltejs/kit';
-import { TOGETHER_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
+import { creditStore } from '$lib/server/recovery-credits';
 
 const TOGETHER_BASE = 'https://api.together.xyz/v1';
 
-const DEFAULT_TEXT_MODEL = 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo';
+const DEFAULT_TEXT_MODEL = 'openai/gpt-oss-120b';
 const DEFAULT_IMAGE_MODEL = 'black-forest-labs/FLUX.2-pro';
 
 function getSizeForAspect(aspect: string) {
@@ -35,13 +36,16 @@ function getSizeForGemini(aspect: string) {
   }
 }
 
-export const POST: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async ({ request, locals, url }) => {
   // Check authentication
   if (!locals.user) {
     throw error(401, 'Authentication required. Please sign in to use AI sandbox.');
   }
 
-  const togetherApiKey = TOGETHER_API_KEY;
+  if (request.headers.get('origin') !== url.origin) throw error(403, 'Invalid request origin.');
+  const recovery = locals.user.access === 'recovery';
+
+  const togetherApiKey = env.TOGETHER_API_KEY;
 
   if (!togetherApiKey) {
     console.error('Missing TOGETHER_API_KEY in environment');
@@ -61,6 +65,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const aspect = (body.aspectRatio as string | undefined) || 'square';
   const imageUrls = body.imageUrls as string[] | undefined; // base64 encoded images (may include data URL prefix)
 
+  if (typeof prompt !== 'string' || prompt.length > 32000) throw error(400, 'Invalid prompt.');
+  if (imageUrls && (!Array.isArray(imageUrls) || imageUrls.length > 4 || imageUrls.some((image) => typeof image !== 'string' || image.length > 8_000_000))) throw error(400, 'Invalid reference images.');
+  if (mode === 'text' && !['openai/gpt-oss-120b', 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'].includes(textModel)) throw error(400, 'Unsupported text model.');
+  if (mode === 'image' && !['black-forest-labs/FLUX.2-pro', 'google/gemini-3-pro-image'].includes(imageModel)) throw error(400, 'Unsupported image model.');
+
   // Validate: text mode needs prompt, image mode needs either prompt or imageUrls
   if (mode === 'text' && !prompt.trim()) {
     throw error(400, 'Text mode requires a prompt.');
@@ -72,20 +81,33 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   // Determine credit cost
   const creditCost = mode === 'text' ? 1 : 5;
 
-  // Fetch current user data to get credits
-  let userRecord;
-  try {
-    userRecord = await locals.pb.collection('users').getOne(locals.user.id);
-  } catch (err) {
-    console.error('Error fetching user data:', err);
-    throw error(500, 'Failed to fetch user data.');
+  let reservation: ReturnType<ReturnType<typeof creditStore>['reserve']> = null;
+  let currentCredits = 0;
+  if (recovery) {
+    try {
+      const store = creditStore(env);
+      currentCredits = store.balance(locals.user.email);
+      reservation = store.reserve(locals.user.email, creditCost);
+    } catch {
+      throw error(503, 'Учёт кредитов временно недоступен. Попробуйте позднее.');
+    }
+    if (!reservation) throw error(402, `Недостаточно кредитов. Нужно ${creditCost}, доступно ${currentCredits}.`);
+  } else {
+    try {
+      const userRecord = await locals.pb.collection('users').getOne(locals.user.id);
+      currentCredits = userRecord.credits ?? 0;
+    } catch { throw error(503, 'Failed to fetch user data.'); }
+    if (currentCredits < creditCost) throw error(402, `Insufficient credits. You need ${creditCost} credit(s) but only have ${currentCredits}.`);
   }
 
-  const currentCredits = userRecord.credits ?? 0;
-
-  // Check if user has enough credits
-  if (currentCredits < creditCost) {
-    throw error(402, `Insufficient credits. You need ${creditCost} credit(s) but only have ${currentCredits}.`);
+  async function finishCredits() {
+    if (reservation) {
+      reservation.commit();
+      return reservation.balance();
+    }
+    const balance = currentCredits - creditCost;
+    await locals.pb.collection('users').update(locals.user!.id, { credits: balance });
+    return balance;
   }
 
   // Helper to strip data URL prefix from base64 strings
@@ -103,6 +125,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${togetherApiKey}`
         },
+        signal: AbortSignal.timeout(120000),
         body: JSON.stringify({
           model: textModel,
           messages: [
@@ -125,17 +148,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       }
 
       const data = await res.json();
-      const text = data.choices?.[0]?.message?.content ?? '';
+      const text = data.choices?.[0]?.message?.content;
+      if (typeof text !== 'string' || !text) throw error(502, 'Empty generation result.');
       
-      // Deduct credits after successful generation
-      const newCredits = currentCredits - creditCost;
-      try {
-        await locals.pb.collection('users').update(locals.user.id, { credits: newCredits });
-      } catch (err) {
-        console.error('Error updating credits:', err);
-        // Continue even if credit update fails, but log the error
-      }
-      
+      const newCredits = await finishCredits();
       return json({ mode, text, credits: newCredits });
     }
 
@@ -158,14 +174,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         // Together AI reference_images expects data URLs (with prefix) not raw base64
         bodyPayload.reference_images = imageUrls; // Keep original data URLs
         
-        // Log to verify image is being sent
-        console.log('Sending reference_images to Gemini:', {
-          imageCount: imageUrls.length,
-          firstImageLength: imageUrls[0]?.length || 0,
-          firstImagePreview: imageUrls[0]?.substring(0, 80) + '...',
-          prompt: prompt,
-          payloadKeys: Object.keys(bodyPayload)
-        });
       }
     } else if (imageModel.startsWith('black-forest-labs/')) {
       // FLUX models use width/height numbers
@@ -179,14 +187,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         // Try keeping the data URL format first
         bodyPayload.reference_images = imageUrls; // Keep original data URLs
         
-        // Log to verify image is being sent
-        console.log('Sending reference_images to FLUX (with data URL prefix):', {
-          imageCount: imageUrls.length,
-          firstImageLength: imageUrls[0]?.length || 0,
-          firstImagePreview: imageUrls[0]?.substring(0, 80) + '...',
-          prompt: prompt,
-          payloadKeys: Object.keys(bodyPayload)
-        });
       }
     }
 
@@ -196,33 +196,26 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${togetherApiKey}`
       },
+      signal: AbortSignal.timeout(120000),
       body: JSON.stringify(bodyPayload)
     });
 
     if (!res.ok) {
       const errText = await res.text();
       console.error('Together image error', res.status, errText);
-      console.error('Request payload:', JSON.stringify(bodyPayload, null, 2));
       throw error(500, 'Together AI image generation failed.');
     }
 
     const data = await res.json();
-    const imageUrl = data.data?.[0]?.url ?? '';
-    console.log('imageUrl from Together:', imageUrl);
+    const imageUrl = data.data?.[0]?.url;
+    if (typeof imageUrl !== 'string' || !imageUrl) throw error(502, 'Empty generation result.');
     
-    // Deduct credits after successful generation
-    const newCredits = currentCredits - creditCost;
-    try {
-      await locals.pb.collection('users').update(locals.user.id, { credits: newCredits });
-    } catch (err) {
-      console.error('Error updating credits:', err);
-      // Continue even if credit update fails, but log the error
-    }
-    
+    const newCredits = await finishCredits();
     return json({ mode, imageUrl, credits: newCredits });
     
   } catch (e) {
-    console.error('AI sandbox error', e);
+    try { reservation?.refund(); } catch { console.error('Credit refund failed; operator review required'); }
+    console.error('AI sandbox request failed');
     throw error(500, 'AI sandbox request failed.');
   }
 };

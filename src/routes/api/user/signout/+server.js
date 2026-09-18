@@ -1,17 +1,12 @@
-import { error, redirect } from '@sveltejs/kit'
+import { json } from '@sveltejs/kit';
+import { SESSION_COOKIE } from '$lib/server/recordings-access';
 
-export async function POST({ request, locals }){
-    //const formData = await request.formData();
-
-    locals.pb.authStore.clear()
-    locals.user = undefined
-
-    const response = { 
-        message: 'Logged out',
-    } 
-
-    console.log(response)
-
-    redirect( 303, '/')
-
+/** @type {import('./$types').RequestHandler} */
+export async function POST({ request, locals, cookies, url }) {
+	if (request.headers.get('origin') !== url.origin) return json({ error: true }, { status: 403 });
+	cookies.delete(SESSION_COOKIE, { path: '/' });
+	cookies.delete('pb_auth', { path: '/' });
+	locals.pb.authStore.clear();
+	locals.user = undefined;
+	return json({ message: 'Logged out' });
 }

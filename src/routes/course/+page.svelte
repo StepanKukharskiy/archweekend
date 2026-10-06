@@ -24,7 +24,10 @@
         }
     }
 
-	$: videos = data.videos;
+	$: videoSections = [
+        { id: 'latest-workshop', title: 'Последний воркшоп', videos: data.workshopVideos },
+        { id: 'ai-course', title: 'Гайд по AI для архитекторов', videos: data.videos }
+    ];
 
 </script>
 
@@ -74,10 +77,13 @@
         <p class="section-subtitle">Доступ к материалам и записям занятий</p>
     </section>
 
-    <div class="video-grid">
-        {#each videos as video}
+    {#each videoSections as section (section.id)}
+    <section class="recordings-section" aria-labelledby={section.id}>
+        <h2 id={section.id} class="recordings-title">{section.title}</h2>
+        <div class="video-grid">
+        {#each section.videos as video (video.id)}
             <div class="video-card glass">
-                <div class="video-wrapper">
+                <div class="video-wrapper" style:aspect-ratio={'aspectRatio' in video ? video.aspectRatio : '16 / 9'}>
                     <iframe
                         src={video.url}
                         title={video.title}
@@ -88,10 +94,22 @@
                 <div class="card-content">
                     <h3>{video.title}</h3>
                     <p>{video.description}</p>
+                    {#if 'topics' in video}
+                        <ol class="video-topics">
+                            {#each video.topics as topic}
+                                <li>
+                                    <strong>{topic.title}</strong>
+                                    <p>{topic.description}</p>
+                                </li>
+                            {/each}
+                        </ol>
+                    {/if}
                 </div>
             </div>
         {/each}
-    </div>
+        </div>
+    </section>
+    {/each}
 </main>
 
 <footer>
@@ -211,6 +229,16 @@
     }
 
     /* Video Grid */
+    .recordings-section + .recordings-section {
+        margin-top: 60px;
+    }
+
+    .recordings-title {
+        margin: 0 0 24px;
+        color: var(--color-blue-500);
+        font-size: clamp(1.4rem, 3vw, 2rem);
+    }
+
     .video-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
@@ -258,6 +286,29 @@
         color: #555;
         font-size: 1rem;
         line-height: 1.5;
+    }
+
+    .video-topics {
+        margin: 24px 0 0;
+        padding-left: 24px;
+    }
+
+    .video-topics li {
+        padding: 16px 0 16px 8px;
+        border-top: 1px solid rgba(0, 0, 235, 0.1);
+    }
+
+    .video-topics li::marker {
+        color: var(--color-blue-500);
+        font-weight: 600;
+    }
+
+    .video-topics strong {
+        line-height: 1.5;
+    }
+
+    .video-topics p {
+        margin: 8px 0 0;
     }
 
     /* Footer */

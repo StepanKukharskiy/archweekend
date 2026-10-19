@@ -1,6 +1,10 @@
 <script>
 	import { onDestroy, onMount, tick } from 'svelte';
-	import { projectGallery as images } from './projectGallery';
+	import { projectGallery } from './projectGallery';
+
+	export let locale = 'ru';
+	$: english = locale === 'en';
+	$: images = projectGallery.map((image) => ({ ...image, alt: english ? image.altEn : image.alt }));
 
 	/** @type {HTMLDialogElement} */
 	let dialog;
@@ -114,11 +118,28 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div class="gallery" role="region" aria-label="Изображения проекта Linha do Horizonte">
+<div
+	class="gallery"
+	role="region"
+	aria-label={english
+		? 'Linha do Horizonte project images'
+		: 'Изображения проекта Linha do Horizonte'}
+>
 	<div class="gallery-tools">
-		<p>{images.length} изображений проекта · Нажмите, чтобы рассмотреть</p>
+		<p>
+			{images.length}
+			{english
+				? 'project images · Click to explore'
+				: 'изображений проекта · Нажмите, чтобы рассмотреть'}
+		</p>
 		<button class="pause" on:click={() => (paused = !paused)} aria-pressed={paused}>
-			{paused ? 'Продолжить прокрутку' : 'Остановить прокрутку'}
+			{english
+				? paused
+					? 'Resume scrolling'
+					: 'Pause scrolling'
+				: paused
+					? 'Продолжить прокрутку'
+					: 'Остановить прокрутку'}
 		</button>
 	</div>
 	<div
@@ -137,7 +158,7 @@
 							class="image-card"
 							style:--image-ratio={image.width / image.height}
 							tabindex={duplicate ? -1 : 0}
-							aria-label={`Увеличить: ${image.alt}`}
+							aria-label={`${english ? 'Enlarge' : 'Увеличить'}: ${image.alt}`}
 							on:click={(event) => openImage(index, event)}
 						>
 							<img
@@ -160,16 +181,22 @@
 <dialog
 	bind:this={dialog}
 	class="lightbox"
-	aria-label="Просмотр изображений проекта"
+	aria-label={english ? 'Project image viewer' : 'Просмотр изображений проекта'}
 	on:close={restorePage}
 >
 	{#if isOpen}
-		<button class="backdrop" aria-label="Закрыть просмотр" tabindex="-1" on:click={closeImage}
+		<button
+			class="backdrop"
+			aria-label={english ? 'Close image viewer' : 'Закрыть просмотр'}
+			tabindex="-1"
+			on:click={closeImage}
 		></button>
 		<div class="lightbox-content">
 			<div class="lightbox-toolbar">
 				<span>Linha do Horizonte</span>
-				<button class="close" aria-label="Закрыть" on:click={closeImage}>✕</button>
+				<button class="close" aria-label={english ? 'Close' : 'Закрыть'} on:click={closeImage}
+					>✕</button
+				>
 			</div>
 			<img
 				class="enlarged"
@@ -179,9 +206,15 @@
 				height={images[selected].height}
 			/>
 			<div class="lightbox-footer">
-				<button aria-label="Предыдущее изображение" on:click={() => navigate(-1)}>←</button>
+				<button
+					aria-label={english ? 'Previous image' : 'Предыдущее изображение'}
+					on:click={() => navigate(-1)}>←</button
+				>
 				<p aria-live="polite">{selected + 1} / {images.length}</p>
-				<button aria-label="Следующее изображение" on:click={() => navigate(1)}>→</button>
+				<button
+					aria-label={english ? 'Next image' : 'Следующее изображение'}
+					on:click={() => navigate(1)}>→</button
+				>
 			</div>
 		</div>
 	{/if}

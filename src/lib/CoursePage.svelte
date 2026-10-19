@@ -1,0 +1,367 @@
+<script>
+	// Removed lang="ts" and type annotations to fix the syntax error
+	import logo from '$lib/images/logo_nobg.png';
+
+	/** @type {import('../routes/course/$types').PageData} */
+	export let data;
+	export let locale = 'ru';
+	$: english = locale === 'en';
+	$: homeUrl = english ? '/en' : '/';
+
+	// Determine if user is logged in
+	$: isLoggedIn = data?.user || false;
+
+	async function handleSignOut() {
+		try {
+			await fetch('/api/user/signout', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			// The redirect will happen on the server side
+			window.location.href = homeUrl;
+		} catch (err) {
+			console.error('Logout failed:', err);
+		}
+	}
+
+	$: videoSections = [
+		{
+			id: 'latest-workshop',
+			title: english ? 'September workshop recordings' : 'Последний воркшоп',
+			videos: data.workshopVideos
+		},
+		{
+			id: 'ai-course',
+			title: english ? 'AI Guide for Architects' : 'Гайд по AI для архитекторов',
+			videos: data.videos
+		}
+	];
+</script>
+
+<svelte:head>
+	<title>{english ? 'Course recordings | SA lab' : 'Видеолекции | SA lab'}</title>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
+<!-- Sticky Navigation -->
+<div class="sticky-nav visible">
+	<nav>
+		<div style="display: flex; gap: 20px; align-items: center;">
+			<a href={homeUrl} style="display:flex; align-items:center; gap:10px;">
+				<img src={logo} alt="Logo" style="width:64px; height:64px;" />
+			</a>
+
+			<div class="nav-links">
+				<nav>
+					<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+						<a href={homeUrl}>{english ? 'About the workshop' : 'О курсе'}</a>
+						{#if !english}<a href="/ai-sandbox">AI-песочница</a>{/if}
+						<a href={english ? '/course' : '/en/course'} lang={english ? 'ru' : 'en'}
+							>{english ? 'RU' : 'EN'}</a
+						>
+					</div>
+				</nav>
+			</div>
+		</div>
+
+		<div>
+			{#if !isLoggedIn}
+				<a href={english ? '/en/user/signin' : '/user/signin'} style="margin-right: 20px;"
+					>{english ? 'Sign in' : 'Войти'}</a
+				>
+			{:else}
+				<button
+					class="nav-link-btn"
+					on:click={handleSignOut}
+					style="margin-right: 20px; background:none; border:none; cursor:pointer; font-size:0.95rem; font-weight:500; color:var(--color-text);"
+				>
+					{english ? 'Sign out' : 'Выход'}
+				</button>
+			{/if}
+			<!-- <a href="#register" class="nav-cta">Присоединиться</a> -->
+		</div>
+	</nav>
+</div>
+
+<main class="container" lang={locale}>
+	<section class="page-header">
+		<h1 class="section-title">{english ? 'Course recordings' : 'Видеолекции курса'}</h1>
+		<p class="section-subtitle">
+			{english
+				? 'Your course materials and session recordings'
+				: 'Доступ к материалам и записям занятий'}
+		</p>
+		{#if english}<p class="recording-language">
+				These recordings are in Russian. Lesson titles and descriptions are provided in English.
+			</p>{/if}
+	</section>
+
+	{#each videoSections as section (section.id)}
+		<section class="recordings-section" aria-labelledby={section.id}>
+			<h2 id={section.id} class="recordings-title">{section.title}</h2>
+			<div class="video-grid">
+				{#each section.videos as video (video.id)}
+					<div class="video-card glass">
+						<div
+							class="video-wrapper"
+							style:aspect-ratio={'aspectRatio' in video ? video.aspectRatio : '16 / 9'}
+						>
+							<iframe
+								src={video.url}
+								title={video.title}
+								allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+								allowfullscreen
+							></iframe>
+						</div>
+						<div class="card-content">
+							<h3>{video.title}</h3>
+							{#if english}<p class="recording-language">Recording language: Russian</p>{/if}
+							<p>{video.description}</p>
+							{#if 'topics' in video}
+								<ol class="video-topics">
+									{#each video.topics as topic}
+										<li>
+											<strong>{topic.title}</strong>
+											<p>{topic.description}</p>
+										</li>
+									{/each}
+								</ol>
+							{/if}
+						</div>
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/each}
+</main>
+
+<footer>
+	<p class="footer-copy">© 2025 SA lab</p>
+</footer>
+
+<style>
+	.recording-language {
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+	.page-header .recording-language {
+		text-align: center;
+	}
+	:global(body) {
+		--color-bg: #f9f9f9;
+		--color-glass: rgba(255, 255, 255, 0.08);
+		--color-glass-border: rgba(255, 255, 255, 0.12);
+		--color-text: #1a1a1a;
+		--color-text-secondary: #1a1a1a;
+		--color-blue-500: #0000eb;
+		--color-blue-600: #0000cc;
+		--color-blue-glow: rgba(0, 0, 255, 0.2);
+		--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		margin: 0;
+	}
+
+	/* Sticky Navigation */
+	.sticky-nav {
+		position: sticky;
+		top: 0;
+		left: 0;
+		right: 0;
+		background: rgba(255, 255, 255, 0.85);
+		backdrop-filter: blur(24px);
+		-webkit-backdrop-filter: blur(24px);
+		border-bottom: 1px solid var(--color-glass-border);
+		z-index: 100;
+		padding: 0 20px;
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+		width: calc(100% - 40px);
+	}
+
+	.sticky-nav nav {
+		max-width: 1400px;
+		margin: 0 auto;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 16px;
+	}
+
+	.sticky-nav a {
+		color: var(--color-text);
+		text-decoration: none;
+		font-size: 0.95rem;
+		font-weight: 500;
+		transition: color 0.2s;
+	}
+
+	.sticky-nav a:hover,
+	.sticky-nav a.active {
+		color: var(--color-blue-500);
+	}
+
+	.sticky-nav .nav-links {
+		display: flex;
+		gap: 20px;
+		flex-wrap: wrap;
+	}
+
+	.sticky-nav .nav-cta {
+		background: var(--color-blue-500);
+		color: white;
+		padding: 10px 24px;
+		border-radius: 8px;
+		transition: var(--transition);
+		box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+	}
+
+	.sticky-nav .nav-cta:hover {
+		background: var(--color-blue-600);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(0, 102, 255, 0.4);
+	}
+
+	/* Glass Utility */
+	.glass {
+		background: var(--color-glass);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		border: 1px solid rgba(0, 0, 0, 0.08);
+	}
+
+	/* Layout */
+	.container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 60px 20px;
+		min-height: 80vh;
+	}
+
+	.page-header {
+		text-align: center;
+		margin-bottom: 60px;
+	}
+
+	.section-title {
+		font-size: clamp(1.8rem, 4vw, 3rem);
+		font-weight: 700;
+		line-height: 1.2;
+		margin-bottom: 16px;
+		color: var(--color-blue-500);
+	}
+
+	.section-subtitle {
+		font-size: 1.2rem;
+		color: #555;
+	}
+
+	/* Video Grid */
+	.recordings-section + .recordings-section {
+		margin-top: 60px;
+	}
+
+	.recordings-title {
+		margin: 0 0 24px;
+		color: var(--color-blue-500);
+		font-size: clamp(1.4rem, 3vw, 2rem);
+	}
+
+	.video-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+		gap: 40px;
+	}
+
+	.video-card {
+		border-radius: 20px;
+		overflow: hidden;
+		background: white;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+		transition: var(--transition);
+	}
+
+	.video-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 20px 40px rgba(0, 0, 235, 0.1);
+		border-color: var(--color-blue-500);
+	}
+
+	.video-wrapper {
+		width: 100%;
+		aspect-ratio: 16/9;
+		background: #000;
+	}
+
+	.video-wrapper iframe {
+		width: 100%;
+		height: 100%;
+		border: none;
+	}
+
+	.card-content {
+		padding: 24px 32px;
+	}
+
+	.card-content h3 {
+		font-size: 1.4rem;
+		font-weight: 600;
+		margin-bottom: 12px;
+		color: var(--color-blue-500);
+	}
+
+	.card-content p {
+		color: #555;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+
+	.video-topics {
+		margin: 24px 0 0;
+		padding-left: 24px;
+	}
+
+	.video-topics li {
+		padding: 16px 0 16px 8px;
+		border-top: 1px solid rgba(0, 0, 235, 0.1);
+	}
+
+	.video-topics li::marker {
+		color: var(--color-blue-500);
+		font-weight: 600;
+	}
+
+	.video-topics strong {
+		line-height: 1.5;
+	}
+
+	.video-topics p {
+		margin: 8px 0 0;
+	}
+
+	/* Footer */
+	footer {
+		margin-top: 80px;
+		padding: 40px;
+		text-align: center;
+		border-top: 1px solid var(--color-glass-border);
+		color: #888;
+	}
+
+	@media (max-width: 768px) {
+		.video-grid {
+			grid-template-columns: 1fr;
+		}
+		.sticky-nav {
+			padding: 0 16px;
+		}
+		.section-title {
+			font-size: 2rem;
+		}
+	}
+</style>

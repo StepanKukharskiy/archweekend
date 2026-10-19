@@ -1,5 +1,6 @@
 									<script>
 										import { onMount } from 'svelte';
+										import LanguageSwitcher from '$lib/LanguageSwitcher.svelte';
 										import ProjectCarousel from '$lib/ProjectCarousel.svelte';
 										import WorkshopProgram from '$lib/WorkshopProgram.svelte';
 										import photo from '$lib/images/photo.jpg';
@@ -1134,6 +1135,7 @@
 									<!-- Hero Section -->
 									<section class="hero" style="background-image: url({bg}); background-size: cover; background-position: center;">
 
+										<LanguageSwitcher locale="ru" />
 										<!-- Added Glass Wrapper -->
 										<div class="hero-content-glass">
 											<img src={logo} alt="SA lab" class="hero-logo-img" />
